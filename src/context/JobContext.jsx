@@ -19,11 +19,11 @@ export const JobProvider = ({ children }) => {
   useEffect(() => {
     const loadApplications = () => {
       const saved = storage.getApplications();
-      if (saved && saved.length > 0) {
+      if (saved) {
         setApplications(saved);
       } else {
-        setApplications(sampleApplications);
-        storage.saveApplications(sampleApplications);
+        // Start with empty array - no sample data
+        setApplications([]);
       }
       setLoading(false);
     };
