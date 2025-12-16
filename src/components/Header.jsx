@@ -1,4 +1,4 @@
-import { Briefcase, Download, Upload, Trash2 } from 'lucide-react';
+import { Briefcase, Download, Upload, Trash2, LogOut } from 'lucide-react';
 import { useJobs } from '../context/JobContext';
 import { useRef, useState } from 'react';
 
@@ -32,6 +32,13 @@ function Header() {
     clearAllData();
     setShowConfirm(false);
     alert('All data cleared successfully!');
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      sessionStorage.removeItem('jobs-tracker-authenticated');
+      window.location.reload();
+    }
   };
 
   return (
@@ -75,6 +82,15 @@ function Header() {
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Clear All</span>
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-3 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-colors"
+                title="Log out"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
 
               <input
