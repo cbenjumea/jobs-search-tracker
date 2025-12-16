@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff, UserPlus, LogIn } from 'lucide-react';
 
 const APP_PASSWORD_KEY = 'jobs-tracker-app-password';
 const AUTH_STATUS_KEY = 'jobs-tracker-authenticated';
@@ -12,6 +12,7 @@ function PasswordGate({ children }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [hasExistingPassword, setHasExistingPassword] = useState(false);
 
   useEffect(() => {
     // Check if password is set
@@ -20,11 +21,13 @@ function PasswordGate({ children }) {
 
     if (!storedPassword) {
       setIsSettingPassword(true);
-      setLoading(false);
-    } else if (authStatus === 'true') {
-      setIsAuthenticated(true);
+      setHasExistingPassword(false);
       setLoading(false);
     } else {
+      setHasExistingPassword(true);
+      if (authStatus === 'true') {
+        setIsAuthenticated(true);
+      }
       setLoading(false);
     }
   }, []);
@@ -65,6 +68,31 @@ function PasswordGate({ children }) {
     }
   };
 
+  const handleResetPassword = () => {
+    if (window.confirm('Reset password? This will clear your current password. You can create a new one after.')) {
+      localStorage.removeItem(APP_PASSWORD_KEY);
+      setIsSettingPassword(true);
+      setHasExistingPassword(false);
+      setPassword('');
+      setConfirmPassword('');
+      setError('');
+    }
+  };
+
+  const switchToLogin = () => {
+    setIsSettingPassword(false);
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+  };
+
+  const switchToSignup = () => {
+    setIsSettingPassword(true);
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -89,13 +117,20 @@ function PasswordGate({ children }) {
           </h1>
           <p className="text-gray-600 text-center">
             {isSettingPassword
-              ? 'Set your password to protect your data'
-              : 'Enter your password to continue'}
+              ? hasExistingPassword
+                ? 'Create a new password'
+                : 'Welcome! Set your password to get started'
+              : 'Welcome back! Enter your password'}
           </p>
         </div>
 
         {isSettingPassword ? (
           <form onSubmit={handleSetPassword} className="space-y-4">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <UserPlus className="w-5 h-5 text-primary-600" />
+              <span className="font-semibold text-primary-600">Sign Up</span>
+            </div>
+
             <div>
               <label className="label">Create Password</label>
               <div className="relative">
@@ -104,7 +139,7 @@ function PasswordGate({ children }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field pr-10"
-                  placeholder="Enter password"
+                  placeholder="Enter password (min 4 characters)"
                   required
                   autoFocus
                 />
@@ -137,15 +172,30 @@ function PasswordGate({ children }) {
             )}
 
             <button type="submit" className="w-full btn-primary py-3">
-              Set Password & Continue
+              Create Password & Start Tracking
             </button>
 
-            <p className="text-xs text-gray-500 text-center">
-              Remember this password! You'll need it to access your tracker.
+            {hasExistingPassword && (
+              <button
+                type="button"
+                onClick={switchToLogin}
+                className="w-full text-sm text-primary-600 hover:text-primary-700 py-2"
+              >
+                Already have a password? Sign In
+              </button>
+            )}
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              Your password is stored locally in your browser
             </p>
           </form>
         ) : (
           <form onSubmit={handleLogin} className="space-y-4">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <LogIn className="w-5 h-5 text-primary-600" />
+              <span className="font-semibold text-primary-600">Sign In</span>
+            </div>
+
             <div>
               <label className="label">Password</label>
               <div className="relative">
@@ -177,6 +227,16 @@ function PasswordGate({ children }) {
             <button type="submit" className="w-full btn-primary py-3">
               Unlock Tracker
             </button>
+
+            <div className="flex flex-col space-y-2 mt-4">
+              <button
+                type="button"
+                onClick={handleResetPassword}
+                className="text-sm text-gray-600 hover:text-gray-800 py-2"
+              >
+                Forgot password? Reset it
+              </button>
+            </div>
           </form>
         )}
       </div>
